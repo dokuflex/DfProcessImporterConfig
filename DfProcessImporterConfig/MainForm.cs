@@ -105,6 +105,7 @@ namespace DfProcessImporterConfig
 
                 
                     ExcelQueryPanel.Hide();
+                XmlQueryPanel.Hide();
                 DataBaseQueryPanel.Show();
                 ConfigTabControl.Show();
             }
@@ -124,7 +125,28 @@ namespace DfProcessImporterConfig
 
                 ExcelQueryPanel.Show();
                 DataBaseQueryPanel.Hide();
+                XmlQueryPanel.Hide();
 
+                ConfigTabControl.Show();
+            }
+
+            if (config.sourceOptions?.FirstOrDefault(p => p.Key == "sourceType").Value == "Ficheros XML")
+            {
+                SourceComboBox.Text = "Ficheros XML";
+
+                if (!String.IsNullOrWhiteSpace(config.sourceOptions?.FirstOrDefault(p => p.Key == "xmlPath").Value))
+                {
+                    XmlPathLabel.Text = config.sourceOptions?.FirstOrDefault(p => p.Key == "xmlPath").Value;
+                }
+
+                if (!String.IsNullOrWhiteSpace(config.sourceOptions?.FirstOrDefault(p => p.Key == "complexNodes").Value))
+                {
+                    complexNodesTextBox.Text = config.sourceOptions?.FirstOrDefault(p => p.Key == "complexNodes").Value;
+                }
+
+                XmlQueryPanel.Show();
+                ExcelQueryPanel.Hide();
+                DataBaseQueryPanel.Hide();
                 ConfigTabControl.Show();
             }
 
@@ -210,6 +232,13 @@ namespace DfProcessImporterConfig
                 }
                 newConfig.sourceOptions.Add(new KeyValuePair<string, string>("excelSheet", ExcelSheetTextBox.Text));
             }
+
+            if (sourceType == "Ficheros XML")
+            {
+                newConfig.sourceOptions.Add(config.sourceOptions.FirstOrDefault(p => p.Key == "xmlPath"));
+                newConfig.sourceOptions.Add(new KeyValuePair<string, string>("complexNodes", complexNodesTextBox.Text));
+            }
+
             if (string.IsNullOrWhiteSpace(apiUrlTextBox.Text)
                 || string.IsNullOrWhiteSpace(apiUserTextBox.Text)
                 || string.IsNullOrWhiteSpace(apiPasswordTextBox.Text)
@@ -220,7 +249,8 @@ namespace DfProcessImporterConfig
             }
 
             if (string.IsNullOrWhiteSpace(excelColumnIdTextBox.Text)
-                && string.IsNullOrWhiteSpace(DbColumnIdTextBox.Text))
+                && string.IsNullOrWhiteSpace(DbColumnIdTextBox.Text)
+                && sourceType != "Ficheros XML")
             {
                 MessageBox.Show("Hay errores en la consulta. La columna identificador no puede estar en blanco.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -277,7 +307,7 @@ namespace DfProcessImporterConfig
                 }
                 RefreshUI();
             }
-            else if (SourceComboBox.Text == "Ficheros Excel")
+            else if (SourceComboBox.Text == "Ficheros Excel" || SourceComboBox.Text == "Ficheros XML")
             {
                 FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
                 folderBrowserDialog.ShowNewFolderButton = false;
@@ -290,9 +320,19 @@ namespace DfProcessImporterConfig
                     else
                     {
                         config = new ProcessImporterConfig();
-                        config.sourceOptions.Add(new KeyValuePair<string, string>("sourceType", "Ficheros Excel"));
-                        config.sourceOptions.Add(new KeyValuePair<string, string>("excelPath", folderBrowserDialog.SelectedPath));
-                        ExcelPathLabel.Text = folderBrowserDialog.SelectedPath;
+                        if (SourceComboBox.Text == "Ficheros Excel")
+                        {
+                            config.sourceOptions.Add(new KeyValuePair<string, string>("sourceType", "Ficheros Excel"));
+                            config.sourceOptions.Add(new KeyValuePair<string, string>("excelPath", folderBrowserDialog.SelectedPath));
+                            ExcelPathLabel.Text = folderBrowserDialog.SelectedPath;
+                        }
+                        else if (SourceComboBox.Text == "Ficheros XML")
+                        {
+                            config.sourceOptions.Add(new KeyValuePair<string, string>("sourceType", "Ficheros XML"));
+                            config.sourceOptions.Add(new KeyValuePair<string, string>("xmlPath", folderBrowserDialog.SelectedPath));
+                            XmlPathLabel.Text = folderBrowserDialog.SelectedPath;
+                        }
+                            
                     }
   
                 }
