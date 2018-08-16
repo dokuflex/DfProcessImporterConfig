@@ -145,6 +145,25 @@ namespace DfProcessImporterConfig
                 }
 
                 XmlQueryPanel.Show();
+                complexNodesTextBox.Show();
+                labelComplexNodes.Show();
+                ExcelQueryPanel.Hide();
+                DataBaseQueryPanel.Hide();
+                ConfigTabControl.Show();
+            }
+
+            if (config.sourceOptions?.FirstOrDefault(p => p.Key == "sourceType").Value == "Ficheros JSON")
+            {
+                SourceComboBox.Text = "Ficheros JSON";
+
+                if (!String.IsNullOrWhiteSpace(config.sourceOptions?.FirstOrDefault(p => p.Key == "jsonPath").Value))
+                {
+                    XmlPathLabel.Text = config.sourceOptions?.FirstOrDefault(p => p.Key == "jsonPath").Value;
+                }
+
+                XmlQueryPanel.Show();
+                complexNodesTextBox.Hide();
+                labelComplexNodes.Hide();
                 ExcelQueryPanel.Hide();
                 DataBaseQueryPanel.Hide();
                 ConfigTabControl.Show();
@@ -239,6 +258,11 @@ namespace DfProcessImporterConfig
                 newConfig.sourceOptions.Add(new KeyValuePair<string, string>("complexNodes", complexNodesTextBox.Text));
             }
 
+            if (sourceType == "Ficheros JSON")
+            {
+                newConfig.sourceOptions.Add(config.sourceOptions.FirstOrDefault(p => p.Key == "jsonPath"));
+            }
+
             if (string.IsNullOrWhiteSpace(apiUrlTextBox.Text)
                 || string.IsNullOrWhiteSpace(apiUserTextBox.Text)
                 || string.IsNullOrWhiteSpace(apiPasswordTextBox.Text)
@@ -250,7 +274,7 @@ namespace DfProcessImporterConfig
 
             if (string.IsNullOrWhiteSpace(excelColumnIdTextBox.Text)
                 && string.IsNullOrWhiteSpace(DbColumnIdTextBox.Text)
-                && sourceType != "Ficheros XML")
+                && sourceType != "Ficheros XML" && sourceType != "Ficheros JSON")
             {
                 MessageBox.Show("Hay errores en la consulta. La columna identificador no puede estar en blanco.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -307,7 +331,7 @@ namespace DfProcessImporterConfig
                 }
                 RefreshUI();
             }
-            else if (SourceComboBox.Text == "Ficheros Excel" || SourceComboBox.Text == "Ficheros XML")
+            else if (SourceComboBox.Text == "Ficheros Excel" || SourceComboBox.Text == "Ficheros XML" || SourceComboBox.Text == "Ficheros JSON")
             {
                 FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
                 folderBrowserDialog.ShowNewFolderButton = false;
@@ -332,7 +356,13 @@ namespace DfProcessImporterConfig
                             config.sourceOptions.Add(new KeyValuePair<string, string>("xmlPath", folderBrowserDialog.SelectedPath));
                             XmlPathLabel.Text = folderBrowserDialog.SelectedPath;
                         }
-                            
+                        else if (SourceComboBox.Text == "Ficheros JSON")
+                        {
+                            config.sourceOptions.Add(new KeyValuePair<string, string>("sourceType", "Ficheros JSON"));
+                            config.sourceOptions.Add(new KeyValuePair<string, string>("jsonPath", folderBrowserDialog.SelectedPath));
+                            XmlPathLabel.Text = folderBrowserDialog.SelectedPath;
+                        }
+
                     }
   
                 }
